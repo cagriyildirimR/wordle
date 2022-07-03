@@ -98,6 +98,7 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
 
     fun initLetterStack() {
         letterStack.clear()
+        trash.clear()
         val rows = when (`try`) {
             State.TRY1 -> tryRows[0]
             State.TRY2 -> tryRows[1]
@@ -152,6 +153,9 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
                 }
                 (listToWord(guess, "") !in wordList) -> {
                     signal.emit(Signal.NOTAWORD)
+                }
+                (`try` == State.TRY6) -> {
+                    signal.emit(Signal.GAMEOVER)
                 }
                 else -> {
                     signal.emit(Signal.NEXTTRY)
