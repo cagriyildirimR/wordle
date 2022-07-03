@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="letters">
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">60dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:text">" "</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:background">@drawable/border</item>
+    </style>
+
+    <style name="button_letters">
+        <item name="android:layout_weight">1</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="backgroundTint">@color/gray</item>
+
+    </style>
+
+    <style name="letter_rows">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">66dp</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+</resources>

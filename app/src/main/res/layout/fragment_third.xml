@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frameLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ThirdFragment">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Wordle"
+        android:textAlignment="center"
+        android:textSize="60dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/first_letters_row"
+        style="@style/letter_rows"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+        <TextView
+            android:id="@+id/first_row_1"
+            style="@style/letters"
+            android:background="@drawable/border"
+            tools:text="A"/>
+
+        <TextView
+            android:id="@+id/first_row_2"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/first_row_3"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/first_row_4"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/first_row_5"
+            style="@style/letters" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/second_letters_row"
+        style="@style/letter_rows"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/first_letters_row">
+
+        <TextView
+            android:id="@+id/second_row_1"
+            style="@style/letters"
+            android:background="@drawable/border" />
+
+        <TextView
+            android:id="@+id/second_row_2"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/second_row_3"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/second_row_4"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/second_row_5"
+            style="@style/letters" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/third_letters_row"
+        style="@style/letter_rows"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/second_letters_row">
+
+        <TextView
+            android:id="@+id/third_row_1"
+            style="@style/letters"
+            android:background="@drawable/border" />
+
+        <TextView
+            android:id="@+id/third_row_2"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/third_row_3"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/third_row_4"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/third_row_5"
+            style="@style/letters" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fourth_letters_row"
+        style="@style/letter_rows"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/third_letters_row">
+
+        <TextView
+            android:id="@+id/fourth_row_1"
+            style="@style/letters"
+            android:background="@drawable/border" />
+
+        <TextView
+            android:id="@+id/fourth_row_2"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/fourth_row_3"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/fourth_row_4"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/fourth_row_5"
+            style="@style/letters" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fifth_letters_row"
+        style="@style/letter_rows"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fourth_letters_row">
+
+        <TextView
+            android:id="@+id/fifth_row_1"
+            style="@style/letters"
+            android:background="@drawable/border" />
+
+        <TextView
+            android:id="@+id/fifth_row_2"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/fifth_row_3"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/fifth_row_4"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/fifth_row_5"
+            style="@style/letters" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sixth_letters_row"
+        style="@style/letter_rows"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fifth_letters_row">
+
+        <TextView
+            android:id="@+id/sixth_row_1"
+            style="@style/letters"
+            android:background="@drawable/border" />
+
+        <TextView
+            android:id="@+id/sixth_row_2"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/sixth_row_3"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/sixth_row_4"
+            style="@style/letters" />
+
+        <TextView
+            android:id="@+id/sixth_row_5"
+            style="@style/letters" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/third_row_keyboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/enter_button"
+            style="@style/button_letters"
+            android:layout_width="80dp"
+            android:text="Enter" />
+
+        <Button
+            android:id="@+id/Z"
+            style="@style/button_letters"
+            android:text="Z" />
+
+        <Button
+            android:id="@+id/X"
+            style="@style/button_letters"
+            android:text="X" />
+
+        <Button
+            android:id="@+id/C"
+            style="@style/button_letters"
+            android:text="C" />
+
+        <Button
+            android:id="@+id/V"
+            style="@style/button_letters"
+            android:text="V" />
+
+        <Button
+            android:id="@+id/B"
+            style="@style/button_letters"
+            android:text="B" />
+
+
+        <Button
+            android:id="@+id/N"
+            style="@style/button_letters"
+            android:text="N" />
+
+
+        <Button
+            android:id="@+id/M"
+            style="@style/button_letters"
+            android:text="M" />
+
+
+        <Button
+            android:id="@+id/delete_button"
+            style="@style/button_letters"
+            android:layout_width="80dp"
+            android:text="Del" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/first_keyboard_row"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:weightSum="10"
+        app:layout_constraintBottom_toTopOf="@+id/second_keyboard_row"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/Q"
+            style="@style/button_letters"
+            android:text="Q" />
+
+        <Button
+            android:id="@+id/W"
+            style="@style/button_letters"
+            android:text="W" />
+
+        <Button
+            android:id="@+id/E"
+            style="@style/button_letters"
+            android:text="E" />
+
+        <Button
+            android:id="@+id/RR"
+            style="@style/button_letters"
+            android:text="R" />
+
+        <Button
+            android:id="@+id/T"
+            style="@style/button_letters"
+            android:text="T" />
+
+        <Button
+            android:id="@+id/Y"
+            style="@style/button_letters"
+            android:text="Y" />
+
+        <Button
+            android:id="@+id/U"
+            style="@style/button_letters"
+            android:text="U" />
+
+        <Button
+            android:id="@+id/I"
+            style="@style/button_letters"
+            android:text="I" />
+
+        <Button
+            android:id="@+id/O"
+            style="@style/button_letters"
+            android:text="O" />
+
+        <Button
+            android:id="@+id/P"
+            style="@style/button_letters"
+            android:text="P" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/second_keyboard_row"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:weightSum="10"
+        app:layout_constraintBottom_toTopOf="@+id/third_row_keyboard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/A"
+            style="@style/button_letters"
+            android:text="A" />
+
+        <Button
+            android:id="@+id/S"
+            style="@style/button_letters"
+            android:text="S" />
+
+        <Button
+            android:id="@+id/D"
+            style="@style/button_letters"
+            android:text="D" />
+
+        <Button
+            android:id="@+id/F"
+            style="@style/button_letters"
+            android:text="F" />
+
+        <Button
+            android:id="@+id/G"
+            style="@style/button_letters"
+            android:text="G" />
+
+        <Button
+            android:id="@+id/H"
+            style="@style/button_letters"
+            android:text="H" />
+
+        <Button
+            android:id="@+id/J"
+            style="@style/button_letters"
+            android:text="J" />
+
+        <Button
+            android:id="@+id/K"
+            style="@style/button_letters"
+            android:text="K" />
+
+        <Button
+            android:id="@+id/L"
+            style="@style/button_letters"
+            android:text="L" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
