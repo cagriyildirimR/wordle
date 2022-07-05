@@ -7,14 +7,38 @@ import androidx.lifecycle.viewModelScope
 import com.example.wordle.databinding.FragmentThirdBinding
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.*
+
+const val EMPTY_STRING = ""
 
 class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
 
     val signal = MutableSharedFlow<Signal>()
 
+    val resetStack: Stack<Pair<TextView, Button?>> = Stack()
+
+    //    val scanner = Scanner(File("../data/words.txt"))
+//
+//    private val wordList = mutableListOf<String>()
+//
+//    init {
+//        while (scanner.hasNext()) {
+//            wordList.add(scanner.next())
+//        }
+//    }
+
     private val wordList = listOf("ABCDE", "GUARD", "GIANT", "GOING", "RISES", "THING", "BUILD")
-    var wordle = "GIANT"
+    var wordle = wordList.random()
+
+    val lettersRow = listOf(
+        binding.firstLettersRow,
+        binding.secondLettersRow,
+        binding.thirdLettersRow,
+        binding.fourthLettersRow,
+        binding.fifthLettersRow,
+        binding.sixthLettersRow
+    )
 
     private val tryRows = listOf(
         listOf(
@@ -91,7 +115,7 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
     )
 
     var `try` = State.TRY1
-    var guess = List<String>(5) {""}
+    var guess = List<String>(5) { "" }
 
     val letterStack = Stack<TextView>()
     val trash = Stack<TextView>()
@@ -151,7 +175,7 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
                 (guess == wordToList()) -> {
                     signal.emit(Signal.WIN)
                 }
-                (listToWord(guess, "") !in wordList) -> {
+                (listToWord(guess, EMPTY_STRING) !in wordList) -> {
                     signal.emit(Signal.NOTAWORD)
                 }
                 (`try` == State.TRY6) -> {
@@ -166,27 +190,25 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
 
     fun colorLogic(
         g: List<String> = guess,
-        w: List<String> = wordToList()
-    ): Triple<MutableList<TextView>, MutableList<TextView>, MutableList<TextView>> {
-        require(g.size == w.size) { "guess size is not equal to wordle size" }
-        val greens = mutableListOf<TextView>()
-        val yellows = mutableListOf<TextView>()
-        val greys = mutableListOf<TextView>()
-
-        g.forEachIndexed { index, s ->
-            when {
-                s == w[index] -> {
-                    greens.add(tryRows[`try`.id][4 - index])
-                }
-                s in w -> {
-                    yellows.add(tryRows[`try`.id][4 - index])
-                }
-                else -> {
-                    greys.add(tryRows[`try`.id][4 - index])
-                }
+        w: List<String> = wordToList()): MutableList<Pair<TextView, Int>> {
+        val result = mutableListOf<Pair<TextView, Int>>()
+        tryRows[`try`.id].reversed().forEachIndexed{ index,  textview ->
+            when(g[index]) {
+                w[index] -> result.add(Pair(textview, R.color.green))
+                in w     -> result.add(Pair(textview, R.color.yellow))
+                else     -> result.add(Pair(textview, R.color.dark_gray))
             }
+            resetStack.add(Pair(textview, keyboardMap[textview.text.toString()]))
         }
-        return Triple(greens, yellows, greys)
+        return result
+    }
+
+
+
+    fun reset() {
+        getNewWord()
+        `try` = State.TRY1
+        initLetterStack()
     }
 
 }

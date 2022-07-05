@@ -8,12 +8,17 @@
     tools:context=".ThirdFragment">
 
     <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Wordle"
+        android:layout_margin="20dp"
+        android:padding="20dp"
+        android:background="@color/black"
+        android:textColor="@color/white"
         android:textAlignment="center"
-        android:textSize="60dp"
+        android:textSize="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,7 +27,7 @@
         style="@style/letter_rows"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2">
+        app:layout_constraintTop_toBottomOf="@+id/info">
 
         <TextView
             android:id="@+id/first_row_1"
