@@ -41,7 +41,7 @@ class ThirdFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val wordle = "Wordle"
+        Toast.makeText(requireContext(), "word is ${viewModel.wordle}", Toast.LENGTH_LONG).show()
 
         viewModel.keyboardMap.forEach { (letter, button) ->
             button.setOnClickListener {
@@ -176,15 +176,19 @@ class ThirdFragment : Fragment() {
             play(x).with(tc)
         }
     }
-
+    var lock = false
     private fun shakeAnimation() {
+        if (!lock) {
+        lock = true
         val r = viewModel.lettersRow[viewModel.`try`.id]
         ValueAnimator.ofFloat(r.x, r.x + 20f, r.x - 20, r.x + 10, r.x - 10, r.x).apply {
             duration = 400
             addUpdateListener { a ->
                 r.x = a.animatedValue as Float
             }
+            doOnEnd { lock = false }
             start()
+        }
         }
     }
 

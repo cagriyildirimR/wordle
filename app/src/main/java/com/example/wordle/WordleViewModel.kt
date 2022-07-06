@@ -1,9 +1,12 @@
 package com.example.wordle
 
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wordle.data.wordList
+import com.example.wordle.data.wordListSize
 import com.example.wordle.databinding.FragmentThirdBinding
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -28,8 +31,9 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
 //        }
 //    }
 
-    private val wordList = listOf("ABCDE", "GUARD", "GIANT", "GOING", "RISES", "THING", "BUILD")
-    var wordle = wordList.random()
+    var r = (0..wordListSize).random()
+    val sli get() = r * 6
+    val wordle get() =  wordList.slice(sli..sli+4)
 
     val lettersRow = listOf(
         binding.firstLettersRow,
@@ -148,7 +152,8 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
     }
 
     fun getNewWord() {
-        wordle = wordList.random()
+        r = (0..wordListSize).random()
+        //wordle = wordList.random()
     }
 
     fun wordToList(): List<String> {
@@ -175,14 +180,14 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
                 (guess == wordToList()) -> {
                     signal.emit(Signal.WIN)
                 }
-                (listToWord(guess, EMPTY_STRING) !in wordList) -> {
-                    signal.emit(Signal.NOTAWORD)
+                (checkWordList(wordList, listToWord(guess, EMPTY_STRING))) -> {
+                    signal.emit(Signal.NEXTTRY)
                 }
                 (`try` == State.TRY6) -> {
                     signal.emit(Signal.GAMEOVER)
                 }
                 else -> {
-                    signal.emit(Signal.NEXTTRY)
+                    signal.emit(Signal.NOTAWORD)
                 }
             }
         }
@@ -203,12 +208,25 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
         return result
     }
 
-
-
     fun reset() {
         getNewWord()
         `try` = State.TRY1
         initLetterStack()
+    }
+
+    fun checkWordList(wordList: String, word: String, lo: Int = 0, hi: Int = wordListSize): Boolean {
+        if (lo > hi) return false
+        var mid = ((hi - lo) / 2) + lo
+        val sli = 6 * mid
+
+        val midWord = wordList.slice(sli..sli+4).lowercase(Locale.getDefault())
+
+        Log.i("HELP", "word is: ${listToWord(guess, EMPTY_STRING)} midWord is: $midWord")
+        return when {
+            word.lowercase(Locale.getDefault()) < midWord  -> checkWordList(wordList, word, lo, mid-1)
+            word.lowercase(Locale.getDefault()) == midWord -> true
+            else            -> checkWordList(wordList, word, mid+1, hi)
+        }
     }
 
 }
