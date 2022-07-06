@@ -157,7 +157,7 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
     }
 
     fun wordToList(): List<String> {
-        return List<String>(5) { wordle[it].toString() }
+        return List<String>(5) { wordle[it].uppercaseChar().toString() }
     }
 
     fun listToWord(l: List<String>, r: String): String {
@@ -219,12 +219,12 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
         var mid = ((hi - lo) / 2) + lo
         val sli = 6 * mid
 
-        val midWord = wordList.slice(sli..sli+4).lowercase(Locale.getDefault())
+        val midWord = wordList.slice(sli..sli+4)
 
         Log.i("HELP", "word is: ${listToWord(guess, EMPTY_STRING)} midWord is: $midWord")
         return when {
-            word.lowercase(Locale.getDefault()) < midWord  -> checkWordList(wordList, word, lo, mid-1)
-            word.lowercase(Locale.getDefault()) == midWord -> true
+            word < midWord  -> checkWordList(wordList, word, lo, mid-1)
+            word == midWord -> true
             else            -> checkWordList(wordList, word, mid+1, hi)
         }
     }
