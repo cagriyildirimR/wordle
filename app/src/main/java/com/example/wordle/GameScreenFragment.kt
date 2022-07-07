@@ -1,27 +1,33 @@
 package com.example.wordle
 
+import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.os.Bundle
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.wordle.databinding.FragmentThirdBinding
+import com.example.wordle.databinding.FragmentGameScreenBinding
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 
-class ThirdFragment : Fragment() {
+class GameScreenFragment : Fragment() {
 
-    private var _binding: FragmentThirdBinding? = null
+    private var _binding: FragmentGameScreenBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var viewModel: WordleViewModel
@@ -32,7 +38,7 @@ class ThirdFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        _binding = FragmentThirdBinding.inflate(inflater, container, false)
+        _binding = FragmentGameScreenBinding.inflate(inflater, container, false)
         viewModelFactory = WordleViewModelFactory(binding)
         viewModel = ViewModelProvider(this, viewModelFactory).get(WordleViewModel::class.java)
         viewModel.initLetterStack()
@@ -75,10 +81,13 @@ class ThirdFragment : Fragment() {
             viewModel.signal.collect {
                 when (it) {
                     Signal.NOTAWORD -> {
-                        val toast =
-                            Toast.makeText(requireContext(), "Not in word list", Toast.LENGTH_LONG)
-                        toast.show()
-
+//                        val s = Snackbar.make(view, "Snackbar MSG", Snackbar.LENGTH_LONG)
+//                        val v = s.view
+//                        val p = v.layoutParams as CoordinatorLayout.LayoutParams
+//                        p.gravity = Gravity.TOP
+//                        v.layoutParams = p
+//                        s.animationMode = BaseTransientBottomBar.ANIMATION_MODE_FADE
+//                        s.show()
                         shakeAnimation()
                     }
                     Signal.NEEDLETTER -> {
@@ -87,14 +96,12 @@ class ThirdFragment : Fragment() {
                     }
                     Signal.NEXTTRY -> {
                         checkRow()
-
                         viewModel.nextState()
-
                     }
                     Signal.GAMEOVER -> {
-                        checkRow()
-
+                        checkRow(::uiReset)
                         Toast.makeText(requireContext(), viewModel.wordle, Toast.LENGTH_LONG).show()
+                        viewModel.reset()
                     }
                     Signal.WIN -> {
                         checkRow(::uiReset)
@@ -102,9 +109,7 @@ class ThirdFragment : Fragment() {
 
                         //uiReset()
                         viewModel.reset()
-
                     }
-
                 }
             }
         }
@@ -117,43 +122,72 @@ class ThirdFragment : Fragment() {
     }
 
     private fun uiReset() {
+        val list = mutableListOf<Animator>()
+        val dur = 10L
         while (viewModel.resetStack.isNotEmpty()) {
+
+
             val x = viewModel.resetStack.pop()
-            x.first.apply {
-                text = " "
-                setTextColor(resources.getColor(R.color.black))
-                setBackgroundResource(R.drawable.border)
-            }
-            x.second!!.apply {
-                setTextColor(resources.getColor(R.color.black))
-                setBackgroundColor(resources.getColor(R.color.gray))
-            }
+            val reverseFontColorToDefaultAnimation =
+                ObjectAnimator.ofArgb(x.first, "textColor", resources.getColor(R.color.black))
+                    .apply {
+                        duration = dur
+                        doOnEnd { //
+                         x.first.text = " "
+                         x.first.setBackgroundResource(R.drawable.border)
+                        }
+                    }
+            val reverseButtonBackgroundToDefaultAnimation =
+                ObjectAnimator.ofArgb(x.second, "backgroundColor", resources.getColor(R.color.gray))
+                    .apply {
+                        duration = dur
+                    }
+            val reverseButtonTextColorToDefaultAnimation =
+                ObjectAnimator.ofArgb(x.second, "textColor", resources.getColor(R.color.black))
+                    .apply {
+                        duration = dur
+                    }
+
+            list.add(
+                AnimatorSet().apply {
+                    play(reverseButtonBackgroundToDefaultAnimation)
+                    play(reverseButtonTextColorToDefaultAnimation)
+                    play(reverseFontColorToDefaultAnimation)
+                }
+            )
         }
+        AnimatorSet().apply { playSequentially(list)}.start()
     }
 
     private fun checkRow(doOnEnd: () -> Unit = {}) {
         val result = viewModel.colorLogic()
 
-        val listRowAnimation = mutableListOf<AnimatorSet>()
+        val listOfFlipAnimation = mutableListOf<AnimatorSet>()
 
-        result.forEach { pair ->
-            listRowAnimation.add(pair.first.flipTextView(resources.getColor(pair.second)))
+        result.forEach { triple ->
+            listOfFlipAnimation.add(
+                triple.first.flipTextView(
+                    resources.getColor(triple.third),
+                    triple.second
+                )
+            )
         }
 
-        val a = AnimatorSet().apply { playSequentially(listRowAnimation as List<AnimatorSet>) }
+        val a =
+            AnimatorSet().apply { playSequentially(listOfFlipAnimation as List<AnimatorSet>) }
         a.doOnEnd {
             doOnEnd()
         }
         a.start()
     }
 
-    private fun TextView.flipTextView(color: Int): AnimatorSet {
-        val f = ObjectAnimator.ofFloat(this, "rotationX", 0f, 90f).apply {
+    private fun TextView.flipTextView(color: Int, button: Button): AnimatorSet {
+        val flip90degrees = ObjectAnimator.ofFloat(this, "rotationX", 0f, 90f).apply {
             duration = 100
 
         }
 
-        val tc = ObjectAnimator.ofArgb(
+        val fontColorAnimation = ObjectAnimator.ofArgb(
             this,
             "textColor",
             resources.getColor(R.color.black),
@@ -162,40 +196,55 @@ class ThirdFragment : Fragment() {
             duration = 10
         }
 
-        val colorAnimation =
+        val textViewBackgroundColorAnimation =
             ObjectAnimator.ofArgb(this, "backgroundColor", color).apply {
                 duration = 200
             }
-        val x = ObjectAnimator.ofFloat(this, "rotationX", 90f, 0f).apply {
+        val flip90degreesBack = ObjectAnimator.ofFloat(this, "rotationX", 90f, 0f).apply {
             duration = 100
         }
 
-        return AnimatorSet().apply {
-            play(f).before(colorAnimation)
-            play(colorAnimation).before(x)
-            play(x).with(tc)
-        }
-    }
-    var lock = false
-    private fun shakeAnimation() {
-        if (!lock) {
-        lock = true
-        val r = viewModel.lettersRow[viewModel.`try`.id]
-        ValueAnimator.ofFloat(r.x, r.x + 20f, r.x - 20, r.x + 10, r.x - 10, r.x).apply {
-            duration = 400
-            addUpdateListener { a ->
-                r.x = a.animatedValue as Float
+        val buttonBackgroundColorAnimation =
+            ObjectAnimator.ofArgb(button, "backgroundColor", color).apply {
+                duration = 10
             }
-            doOnEnd { lock = false }
-            start()
-        }
+
+        return AnimatorSet().apply {
+            play(flip90degrees).before(textViewBackgroundColorAnimation)
+            play(textViewBackgroundColorAnimation).before(flip90degreesBack)
+            play(flip90degreesBack).with(fontColorAnimation)
+                .before(buttonBackgroundColorAnimation)
+            play(buttonBackgroundColorAnimation)
         }
     }
 
+    var lock = false
+    private fun shakeAnimation() {
+        if (!lock) {
+            lock = true
+            val r = viewModel.lettersRow[viewModel.`try`.id]
+            ValueAnimator.ofFloat(
+                r.x,
+                r.x + 20f,
+                r.x - 20,
+                r.x + 10,
+                r.x - 10,
+                r.x - 5,
+                r.x + 5,
+                r.x
+            ).apply {
+                duration = 400
+                addUpdateListener { a ->
+                    r.x = a.animatedValue as Float
+                }
+                doOnEnd { lock = false }
+                start()
+            }
+        }
+    }
 
     override fun onDestroy() {
         _binding = null
         super.onDestroy()
     }
-
 }

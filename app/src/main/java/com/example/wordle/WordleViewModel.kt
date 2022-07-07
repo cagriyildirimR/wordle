@@ -7,33 +7,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wordle.data.wordList
 import com.example.wordle.data.wordListSize
-import com.example.wordle.databinding.FragmentThirdBinding
+import com.example.wordle.databinding.FragmentGameScreenBinding
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.*
 
 const val EMPTY_STRING = ""
+const val WORD_LENGTH = 5
 
-class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
+class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
 
     val signal = MutableSharedFlow<Signal>()
 
     val resetStack: Stack<Pair<TextView, Button?>> = Stack()
 
-    //    val scanner = Scanner(File("../data/words.txt"))
-//
-//    private val wordList = mutableListOf<String>()
-//
-//    init {
-//        while (scanner.hasNext()) {
-//            wordList.add(scanner.next())
-//        }
-//    }
-
-    var r = (0..wordListSize).random()
-    val sli get() = r * 6
-    val wordle get() =  wordList.slice(sli..sli+4)
+    var r = Random(System.nanoTime()).nextInt(wordListSize)
+    val sli get() = r * WORD_LENGTH
+    val wordle get() =  wordList.slice(sli until sli+ WORD_LENGTH)
 
     val lettersRow = listOf(
         binding.firstLettersRow,
@@ -119,7 +109,7 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
     )
 
     var `try` = State.TRY1
-    var guess = List<String>(5) { "" }
+    var guess = List<String>(WORD_LENGTH) { "" }
 
     val letterStack = Stack<TextView>()
     val trash = Stack<TextView>()
@@ -151,16 +141,16 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
         initLetterStack()
     }
 
-    fun getNewWord() {
-        r = (0..wordListSize).random()
+    private fun getNewWord() {
+        var r = Random(System.nanoTime()).nextInt(wordListSize)
         //wordle = wordList.random()
     }
 
-    fun wordToList(): List<String> {
-        return List<String>(5) { wordle[it].uppercaseChar().toString() }
+    private fun wordToList(): List<String> {
+        return List<String>(WORD_LENGTH) { wordle[it].uppercaseChar().toString() }
     }
 
-    fun listToWord(l: List<String>, r: String): String {
+    private fun listToWord(l: List<String>, r: String = EMPTY_STRING): String {
         if (l.isEmpty()) {
             return r
         }
@@ -180,11 +170,12 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
                 (guess == wordToList()) -> {
                     signal.emit(Signal.WIN)
                 }
-                (checkWordList(wordList, listToWord(guess, EMPTY_STRING))) -> {
-                    signal.emit(Signal.NEXTTRY)
-                }
-                (`try` == State.TRY6) -> {
-                    signal.emit(Signal.GAMEOVER)
+                (searchWordList(wordList, listToWord(guess))) -> {
+                    if (`try` == State.TRY6) {
+                        signal.emit(Signal.GAMEOVER)
+                    } else {
+                        signal.emit(Signal.NEXTTRY)
+                    }
                 }
                 else -> {
                     signal.emit(Signal.NOTAWORD)
@@ -195,13 +186,13 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
 
     fun colorLogic(
         g: List<String> = guess,
-        w: List<String> = wordToList()): MutableList<Pair<TextView, Int>> {
-        val result = mutableListOf<Pair<TextView, Int>>()
+        w: List<String> = wordToList()): MutableList<Triple<TextView,Button, Int>> {
+        val result = mutableListOf<Triple<TextView, Button, Int>>()
         tryRows[`try`.id].reversed().forEachIndexed{ index,  textview ->
             when(g[index]) {
-                w[index] -> result.add(Pair(textview, R.color.green))
-                in w     -> result.add(Pair(textview, R.color.yellow))
-                else     -> result.add(Pair(textview, R.color.dark_gray))
+                w[index] -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.green))
+                in w     -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.yellow))
+                else     -> result.add(Triple(textview,keyboardMap[textview.text]!!, R.color.dark_gray))
             }
             resetStack.add(Pair(textview, keyboardMap[textview.text.toString()]))
         }
@@ -214,18 +205,18 @@ class WordleViewModel(binding: FragmentThirdBinding) : ViewModel() {
         initLetterStack()
     }
 
-    fun checkWordList(wordList: String, word: String, lo: Int = 0, hi: Int = wordListSize): Boolean {
+    private fun searchWordList(wordList: String, word: String, lo: Int = 0, hi: Int = wordListSize): Boolean {
         if (lo > hi) return false
         var mid = ((hi - lo) / 2) + lo
-        val sli = 6 * mid
+        val sli = WORD_LENGTH * mid
 
         val midWord = wordList.slice(sli..sli+4)
 
         Log.i("HELP", "word is: ${listToWord(guess, EMPTY_STRING)} midWord is: $midWord")
         return when {
-            word < midWord  -> checkWordList(wordList, word, lo, mid-1)
+            word < midWord  -> searchWordList(wordList, word, lo, mid-1)
             word == midWord -> true
-            else            -> checkWordList(wordList, word, mid+1, hi)
+            else            -> searchWordList(wordList, word, mid+1, hi)
         }
     }
 
