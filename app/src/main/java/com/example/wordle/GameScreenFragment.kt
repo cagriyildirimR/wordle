@@ -47,7 +47,7 @@ class GameScreenFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Toast.makeText(requireContext(), "word is ${viewModel.wordle}", Toast.LENGTH_LONG).show()
+        //Toast.makeText(requireContext(), "word is ${viewModel.wordle}", Toast.LENGTH_LONG).show()
 
         viewModel.keyboardMap.forEach { (letter, button) ->
             button.setOnClickListener {
@@ -81,13 +81,7 @@ class GameScreenFragment : Fragment() {
             viewModel.signal.collect {
                 when (it) {
                     Signal.NOTAWORD -> {
-//                        val s = Snackbar.make(view, "Snackbar MSG", Snackbar.LENGTH_LONG)
-//                        val v = s.view
-//                        val p = v.layoutParams as CoordinatorLayout.LayoutParams
-//                        p.gravity = Gravity.TOP
-//                        v.layoutParams = p
-//                        s.animationMode = BaseTransientBottomBar.ANIMATION_MODE_FADE
-//                        s.show()
+                        Toast.makeText(context, "Not in word list", Toast.LENGTH_LONG).show()
                         shakeAnimation()
                     }
                     Signal.NEEDLETTER -> {
@@ -106,7 +100,6 @@ class GameScreenFragment : Fragment() {
                     Signal.WIN -> {
                         checkRow(::uiReset)
                         Toast.makeText(requireContext(), "You won", Toast.LENGTH_LONG).show()
-
                         //uiReset()
                         viewModel.reset()
                     }
@@ -125,7 +118,6 @@ class GameScreenFragment : Fragment() {
         val list = mutableListOf<Animator>()
         val dur = 10L
         while (viewModel.resetStack.isNotEmpty()) {
-
 
             val x = viewModel.resetStack.pop()
             val reverseFontColorToDefaultAnimation =
