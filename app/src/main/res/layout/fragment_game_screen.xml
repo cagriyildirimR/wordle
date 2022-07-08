@@ -7,12 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".GameScreenFragment">
 
+
     <TextView
         android:id="@+id/info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/wordle"
         android:padding="20dp"
+        android:text="@string/wordle"
         android:textAlignment="center"
         android:textSize="48dp"
         android:textStyle="bold"
@@ -31,7 +32,7 @@
             android:id="@+id/first_row_1"
             style="@style/letters"
             android:background="@drawable/border"
-            tools:text="A"/>
+            tools:text="A" />
 
         <TextView
             android:id="@+id/first_row_2"
@@ -375,6 +376,5 @@
             android:text="L" />
 
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,8 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.wordle.data.wordList
 import com.example.wordle.data.wordListSize
 import com.example.wordle.databinding.FragmentGameScreenBinding
+import com.example.wordle.util.listToWord
+import com.example.wordle.util.wordToList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import com.example.wordle.util.wordlistBinarySearch
 import java.util.*
 
 const val EMPTY_STRING = ""
@@ -22,8 +25,8 @@ class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
     val resetStack: Stack<Pair<TextView, Button?>> = Stack()
 
     var r = Random(System.nanoTime()).nextInt(wordListSize)
-    val sli get() = r * WORD_LENGTH
-    val wordle get() =  wordList.slice(sli until sli+ WORD_LENGTH)
+    private val wordSlice get() = r * WORD_LENGTH
+    val wordle get() =  wordList.slice(wordSlice until wordSlice+ WORD_LENGTH)
 
     val lettersRow = listOf(
         binding.firstLettersRow,
@@ -142,19 +145,7 @@ class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
     }
 
     private fun getNewWord() {
-        var r = Random(System.nanoTime()).nextInt(wordListSize)
-        //wordle = wordList.random()
-    }
-
-    private fun wordToList(): List<String> {
-        return List<String>(WORD_LENGTH) { wordle[it].uppercaseChar().toString() }
-    }
-
-    private fun listToWord(l: List<String>, r: String = EMPTY_STRING): String {
-        if (l.isEmpty()) {
-            return r
-        }
-        return listToWord(l.drop(1), r + l.first())
+        r = Random(System.nanoTime()).nextInt(wordListSize)
     }
 
     fun check() {
@@ -167,10 +158,10 @@ class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
                 (guess.filter { it != " " }.size < 5) -> {
                     signal.emit(Signal.NEEDLETTER)
                 }
-                (guess == wordToList()) -> {
+                (guess == wordToList(wordle)) -> {
                     signal.emit(Signal.WIN)
                 }
-                (searchWordList(wordList, listToWord(guess))) -> {
+                (wordlistBinarySearch(wordList, listToWord(guess),0, wordListSize, WORD_LENGTH)) -> {
                     if (`try` == State.TRY6) {
                         signal.emit(Signal.GAMEOVER)
                     } else {
@@ -186,12 +177,12 @@ class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
 
     fun colorLogic(
         g: List<String> = guess,
-        w: List<String> = wordToList()): MutableList<Triple<TextView,Button, Int>> {
+        w: List<String> = wordToList(wordle)): MutableList<Triple<TextView,Button, Int>> {
         val result = mutableListOf<Triple<TextView, Button, Int>>()
         tryRows[`try`.id].reversed().forEachIndexed{ index,  textview ->
             when(g[index]) {
                 w[index] -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.green))
-                in w     -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.yellow))
+                in w.filterIndexed { i, s -> g[i] != s }     -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.yellow))
                 else     -> result.add(Triple(textview,keyboardMap[textview.text]!!, R.color.dark_gray))
             }
             resetStack.add(Pair(textview, keyboardMap[textview.text.toString()]))
@@ -203,21 +194,6 @@ class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
         getNewWord()
         `try` = State.TRY1
         initLetterStack()
-    }
-
-    private fun searchWordList(wordList: String, word: String, lo: Int = 0, hi: Int = wordListSize): Boolean {
-        if (lo > hi) return false
-        var mid = ((hi - lo) / 2) + lo
-        val sli = WORD_LENGTH * mid
-
-        val midWord = wordList.slice(sli..sli+4)
-
-        Log.i("HELP", "word is: ${listToWord(guess, EMPTY_STRING)} midWord is: $midWord")
-        return when {
-            word < midWord  -> searchWordList(wordList, word, lo, mid-1)
-            word == midWord -> true
-            else            -> searchWordList(wordList, word, mid+1, hi)
-        }
     }
 
 }

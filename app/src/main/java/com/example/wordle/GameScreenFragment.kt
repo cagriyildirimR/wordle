@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.wordle.databinding.FragmentGameScreenBinding
@@ -30,7 +31,8 @@ class GameScreenFragment : Fragment() {
     private var _binding: FragmentGameScreenBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: WordleViewModel
+   // private lateinit var viewModel: WordleViewModel
+    private val viewModel by viewModels<WordleViewModel>{WordleViewModelFactory(binding)}
     private lateinit var viewModelFactory: WordleViewModelFactory
 
     override fun onCreateView(
@@ -40,14 +42,14 @@ class GameScreenFragment : Fragment() {
 
         _binding = FragmentGameScreenBinding.inflate(inflater, container, false)
         viewModelFactory = WordleViewModelFactory(binding)
-        viewModel = ViewModelProvider(this, viewModelFactory).get(WordleViewModel::class.java)
+        //viewModel = ViewModelProvider(this, viewModelFactory).get(WordleViewModel::class.java)
+
         viewModel.initLetterStack()
-        // Inflate the layout for this fragment
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        //Toast.makeText(requireContext(), "word is ${viewModel.wordle}", Toast.LENGTH_LONG).show()
 
         viewModel.keyboardMap.forEach { (letter, button) ->
             button.setOnClickListener {
@@ -83,6 +85,7 @@ class GameScreenFragment : Fragment() {
                     Signal.NOTAWORD -> {
                         Toast.makeText(context, "Not in word list", Toast.LENGTH_LONG).show()
                         shakeAnimation()
+                        //showMessage("Not in word list")
                     }
                     Signal.NEEDLETTER -> {
                         shakeAnimation()
@@ -100,7 +103,6 @@ class GameScreenFragment : Fragment() {
                     Signal.WIN -> {
                         checkRow(::uiReset)
                         Toast.makeText(requireContext(), "You won", Toast.LENGTH_LONG).show()
-                        //uiReset()
                         viewModel.reset()
                     }
                 }
