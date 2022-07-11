@@ -12,7 +12,6 @@
         android:id="@+id/info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
         android:text="@string/wordle"
         android:textAlignment="center"
         android:textSize="48dp"
@@ -201,10 +200,9 @@
         android:id="@+id/third_row_keyboard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="60dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/second_keyboard_row">
 
         <Button
             android:id="@+id/enter_button"
@@ -264,9 +262,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:weightSum="10"
-        app:layout_constraintBottom_toTopOf="@+id/second_keyboard_row"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sixth_letters_row">
 
         <Button
             android:id="@+id/Q"
@@ -326,9 +324,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:weightSum="10"
-        app:layout_constraintBottom_toTopOf="@+id/third_row_keyboard"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/first_keyboard_row">
 
         <Button
             android:id="@+id/A"

@@ -1,27 +1,19 @@
 package com.example.wordle
 
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.os.Bundle
-import android.view.Gravity
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.animation.doOnEnd
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.wordle.databinding.FragmentGameScreenBinding
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
+import com.example.wordle.util.flipListOfTextViews
+import com.example.wordle.util.shakeAnimation
+import com.example.wordle.util.slightlyScaleUpAnimation
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -31,9 +23,7 @@ class GameScreenFragment : Fragment() {
     private var _binding: FragmentGameScreenBinding? = null
     private val binding get() = _binding!!
 
-   // private lateinit var viewModel: WordleViewModel
-    private val viewModel by viewModels<WordleViewModel>{WordleViewModelFactory(binding)}
-    private lateinit var viewModelFactory: WordleViewModelFactory
+    private val viewModel by viewModels<WordleViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,30 +31,121 @@ class GameScreenFragment : Fragment() {
     ): View {
 
         _binding = FragmentGameScreenBinding.inflate(inflater, container, false)
-        viewModelFactory = WordleViewModelFactory(binding)
-        //viewModel = ViewModelProvider(this, viewModelFactory).get(WordleViewModel::class.java)
-
-        viewModel.initLetterStack()
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        viewModel.keyboardMap.forEach { (letter, button) ->
+        val listOfTextViews = listOf(
+            listOf(
+                binding.firstRow1,
+                binding.firstRow2,
+                binding.firstRow3,
+                binding.firstRow4,
+                binding.firstRow5
+            ),
+            listOf(
+                binding.secondRow1,
+                binding.secondRow2,
+                binding.secondRow3,
+                binding.secondRow4,
+                binding.secondRow5
+            ),
+            listOf(
+                binding.thirdRow1,
+                binding.thirdRow2,
+                binding.thirdRow3,
+                binding.thirdRow4,
+                binding.thirdRow5
+            ),
+            listOf(
+                binding.fourthRow1,
+                binding.fourthRow2,
+                binding.fourthRow3,
+                binding.fourthRow4,
+                binding.fourthRow5
+            ),
+            listOf(
+                binding.fifthRow1,
+                binding.fifthRow2,
+                binding.fifthRow3,
+                binding.fifthRow4,
+                binding.fifthRow5
+            ),
+            listOf(
+                binding.sixthRow1,
+                binding.sixthRow2,
+                binding.sixthRow3,
+                binding.sixthRow4,
+                binding.sixthRow5
+            )
+        )
+
+        val lettersRow = listOf(
+            binding.firstLettersRow,
+            binding.secondLettersRow,
+            binding.thirdLettersRow,
+            binding.fourthLettersRow,
+            binding.fifthLettersRow,
+            binding.sixthLettersRow
+        )
+        val keyboardMap = mapOf<String, Button>(
+            "A" to binding.A,
+            "B" to binding.B,
+            "C" to binding.C,
+            "D" to binding.D,
+            "E" to binding.E,
+            "F" to binding.F,
+            "G" to binding.G,
+            "H" to binding.H,
+            "I" to binding.I,
+            "J" to binding.J,
+            "K" to binding.K,
+            "L" to binding.L,
+            "M" to binding.M,
+            "N" to binding.N,
+            "O" to binding.O,
+            "P" to binding.P,
+            "Q" to binding.Q,
+            "R" to binding.RR,
+            "S" to binding.S,
+            "T" to binding.T,
+            "U" to binding.U,
+            "V" to binding.V,
+            "W" to binding.W,
+            "X" to binding.X,
+            "Y" to binding.Y,
+            "Z" to binding.Z,
+        )
+
+        var shakeAnimation = shakeAnimation(lettersRow[viewModel.currentPosition.row])
+
+        keyboardMap.forEach { (letter, button) ->
+            lifecycleScope.launch{
+                viewModel.listOfKeys[letter]!!.collect { key ->
+                    button.apply {
+                        setBackgroundColor(resources.getColor(key.backgroundColor))
+                        setTextColor(resources.getColor(key.textColor))
+                    }
+                }
+            }
             button.setOnClickListener {
-                if (!viewModel.letterStack.empty()) {
-                    val current = viewModel.letterStack.pop()
-                    viewModel.trash.push(current)
-                    current.let { c ->
-                        c.text = (it as Button).text
-                        ValueAnimator.ofFloat(c.scaleX, 1.1f, 1f).apply {
-                            duration = 100
-                            addUpdateListener {
-                                c.scaleX = animatedValue as Float
-                                c.scaleY = animatedValue as Float
-                            }
-                            start()
+                viewModel.setLetter(letter)
+            }
+        }
+
+        listOfTextViews.forEachIndexed { rows, list ->
+            list.forEachIndexed { cols, textView ->
+                lifecycleScope.launch {
+                    viewModel.listOfTextViews[rows][cols].collect { s ->
+                        if (s.letter != " " && s.backgroundColor == R.color.white) {
+                            slightlyScaleUpAnimation(textView)
+                        }
+                        textView.apply {
+                            text = s.letter
+                            background = resources.getDrawable(s.backgroundColor)
+                            setTextColor(resources.getColor(s.textColor))
                         }
                     }
                 }
@@ -72,10 +153,12 @@ class GameScreenFragment : Fragment() {
         }
 
         binding.deleteButton.setOnClickListener {
-            if (!viewModel.trash.empty()) {
-                val x = viewModel.trash.pop()
-                x.text = " "
-                viewModel.letterStack.push(x)
+            viewModel.deleteLetter()
+        }
+
+        binding.enterButton.setOnClickListener {
+            lifecycleScope.launch {
+                viewModel.checkRow()
             }
         }
 
@@ -85,156 +168,62 @@ class GameScreenFragment : Fragment() {
                     Signal.NOTAWORD -> {
                         Toast.makeText(context, "Not in word list", Toast.LENGTH_LONG).show()
                         shakeAnimation()
-                        //showMessage("Not in word list")
                     }
                     Signal.NEEDLETTER -> {
                         shakeAnimation()
                         Toast.makeText(context, "Not enough letters", Toast.LENGTH_LONG).show()
                     }
                     Signal.NEXTTRY -> {
-                        checkRow()
-                        viewModel.nextState()
-                    }
-                    Signal.GAMEOVER -> {
-                        checkRow(::uiReset)
-                        Toast.makeText(requireContext(), viewModel.wordle, Toast.LENGTH_LONG).show()
-                        viewModel.reset()
-                    }
-                    Signal.WIN -> {
-                        checkRow(::uiReset)
-                        Toast.makeText(requireContext(), "You won", Toast.LENGTH_LONG).show()
-                        viewModel.reset()
-                    }
-                }
-            }
-        }
-
-        binding.enterButton.setOnClickListener {
-            viewModel.check()
-        }
-
-        super.onViewCreated(view, savedInstanceState)
-    }
-
-    private fun uiReset() {
-        val list = mutableListOf<Animator>()
-        val dur = 10L
-        while (viewModel.resetStack.isNotEmpty()) {
-
-            val x = viewModel.resetStack.pop()
-            val reverseFontColorToDefaultAnimation =
-                ObjectAnimator.ofArgb(x.first, "textColor", resources.getColor(R.color.black))
-                    .apply {
-                        duration = dur
-                        doOnEnd { //
-                         x.first.text = " "
-                         x.first.setBackgroundResource(R.drawable.border)
+                        flip(
+                            listOfTextViews[viewModel.currentPosition.row],
+                            viewModel.checkColor(),
+                        ) {
+                            viewModel.emitColor()
+                            viewModel.currentPosition.nextRow()
+                            shakeAnimation = shakeAnimation(lettersRow[viewModel.currentPosition.row])
                         }
                     }
-            val reverseButtonBackgroundToDefaultAnimation =
-                ObjectAnimator.ofArgb(x.second, "backgroundColor", resources.getColor(R.color.gray))
-                    .apply {
-                        duration = dur
-                    }
-            val reverseButtonTextColorToDefaultAnimation =
-                ObjectAnimator.ofArgb(x.second, "textColor", resources.getColor(R.color.black))
-                    .apply {
-                        duration = dur
-                    }
+                    Signal.GAMEOVER -> {
 
-            list.add(
-                AnimatorSet().apply {
-                    play(reverseButtonBackgroundToDefaultAnimation)
-                    play(reverseButtonTextColorToDefaultAnimation)
-                    play(reverseFontColorToDefaultAnimation)
+                        flip(
+                            listOfTextViews[viewModel.currentPosition.row],
+                            viewModel.checkColor(),
+                        ) {
+                            viewModel.emitColor()
+                            viewModel.resetGame()
+                        }
+
+                        Toast.makeText(context, "Gameover: ${viewModel.wordle}", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                    Signal.WIN -> {
+                        flip(
+                            listOfTextViews[viewModel.currentPosition.row],
+                            viewModel.checkColor(),
+                        ) {
+                            viewModel.emitColor()
+                            viewModel.resetGame()
+                        }
+                        Toast.makeText(context, "YouWon", Toast.LENGTH_LONG).show()
+                    }
                 }
-            )
+            }
         }
-        AnimatorSet().apply { playSequentially(list)}.start()
     }
 
-    private fun checkRow(doOnEnd: () -> Unit = {}) {
-        val result = viewModel.colorLogic()
-
-        val listOfFlipAnimation = mutableListOf<AnimatorSet>()
-
-        result.forEach { triple ->
-            listOfFlipAnimation.add(
-                triple.first.flipTextView(
-                    resources.getColor(triple.third),
-                    triple.second
-                )
-            )
-        }
-
-        val a =
-            AnimatorSet().apply { playSequentially(listOfFlipAnimation as List<AnimatorSet>) }
-        a.doOnEnd {
+    private fun flip(
+        listOfTextViews: List<TextView>,
+        letters: List<Letter>,
+        reset: Boolean = false,
+        doOnEnd: () -> Unit
+    ) {
+        flipListOfTextViews(
+            listOfTextViews,
+            letters,
+            reset = reset
+        ) {
             doOnEnd()
-        }
-        a.start()
-    }
-
-    private fun TextView.flipTextView(color: Int, button: Button): AnimatorSet {
-        val flip90degrees = ObjectAnimator.ofFloat(this, "rotationX", 0f, 90f).apply {
-            duration = 100
-
-        }
-
-        val fontColorAnimation = ObjectAnimator.ofArgb(
-            this,
-            "textColor",
-            resources.getColor(R.color.black),
-            resources.getColor(R.color.white)
-        ).apply {
-            duration = 10
-        }
-
-        val textViewBackgroundColorAnimation =
-            ObjectAnimator.ofArgb(this, "backgroundColor", color).apply {
-                duration = 200
-            }
-        val flip90degreesBack = ObjectAnimator.ofFloat(this, "rotationX", 90f, 0f).apply {
-            duration = 100
-        }
-
-        val buttonBackgroundColorAnimation =
-            ObjectAnimator.ofArgb(button, "backgroundColor", color).apply {
-                duration = 10
-            }
-
-        return AnimatorSet().apply {
-            play(flip90degrees).before(textViewBackgroundColorAnimation)
-            play(textViewBackgroundColorAnimation).before(flip90degreesBack)
-            play(flip90degreesBack).with(fontColorAnimation)
-                .before(buttonBackgroundColorAnimation)
-            play(buttonBackgroundColorAnimation)
-        }
-    }
-
-    var lock = false
-    private fun shakeAnimation() {
-        if (!lock) {
-            lock = true
-            val r = viewModel.lettersRow[viewModel.`try`.id]
-            ValueAnimator.ofFloat(
-                r.x,
-                r.x + 20f,
-                r.x - 20,
-                r.x + 10,
-                r.x - 10,
-                r.x - 5,
-                r.x + 5,
-                r.x
-            ).apply {
-                duration = 400
-                addUpdateListener { a ->
-                    r.x = a.animatedValue as Float
-                }
-                doOnEnd { lock = false }
-                start()
-            }
-        }
+        }.start()
     }
 
     override fun onDestroy() {

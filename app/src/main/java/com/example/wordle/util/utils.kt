@@ -1,7 +1,7 @@
 package com.example.wordle.util
 
-import com.example.wordle.EMPTY_STRING
-import com.example.wordle.WORD_LENGTH
+import com.example.wordle.data.WORD_LENGTH
+
 
 /**
  * Recursive binary search function that searches through a concatenated
@@ -41,6 +41,6 @@ fun listToWord(list: List<String>, result: String = ""): String {
     return listToWord(list.drop(1), result + list.first())
 }
 
-fun wordToList(word: String): List<String> {
-    return List<String>(WORD_LENGTH) { word[it].uppercaseChar().toString() }
+fun wordToList(word: String, wordLength: Int): List<String> {
+    return List<String>(wordLength) { word[it].uppercaseChar().toString() }
 }

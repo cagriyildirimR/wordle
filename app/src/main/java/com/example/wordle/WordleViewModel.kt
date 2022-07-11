@@ -1,199 +1,174 @@
 package com.example.wordle
 
-import android.util.Log
-import android.widget.Button
-import android.widget.TextView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wordle.data.WORD_LENGTH
 import com.example.wordle.data.wordList
 import com.example.wordle.data.wordListSize
 import com.example.wordle.databinding.FragmentGameScreenBinding
 import com.example.wordle.util.listToWord
-import com.example.wordle.util.wordToList
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 import com.example.wordle.util.wordlistBinarySearch
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import java.util.*
 
 const val EMPTY_STRING = ""
-const val WORD_LENGTH = 5
+const val NUMBER_OF_ROWS = 6
+val DEFAULT_LETTER = Letter(" ", R.drawable.border, R.color.black)
+const val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const val ALPHABET_LENGTH = 26
+val DEFAULT_KEY = Key(backgroundColor = R.color.gray, textColor = R.color.black)
 
-class WordleViewModel(binding: FragmentGameScreenBinding) : ViewModel() {
+class WordleViewModel() : ViewModel() {
 
     val signal = MutableSharedFlow<Signal>()
 
-    val resetStack: Stack<Pair<TextView, Button?>> = Stack()
-
     var r = Random(System.nanoTime()).nextInt(wordListSize)
     private val wordSlice get() = r * WORD_LENGTH
-    val wordle get() =  wordList.slice(wordSlice until wordSlice+ WORD_LENGTH)
 
-    val lettersRow = listOf(
-        binding.firstLettersRow,
-        binding.secondLettersRow,
-        binding.thirdLettersRow,
-        binding.fourthLettersRow,
-        binding.fifthLettersRow,
-        binding.sixthLettersRow
-    )
+    val wordle get() = wordList.slice(wordSlice until wordSlice + WORD_LENGTH)
 
-    private val tryRows = listOf(
-        listOf(
-            binding.firstRow5,
-            binding.firstRow4,
-            binding.firstRow3,
-            binding.firstRow2,
-            binding.firstRow1
-        ),
-        listOf(
-            binding.secondRow5,
-            binding.secondRow4,
-            binding.secondRow3,
-            binding.secondRow2,
-            binding.secondRow1
-        ),
-        listOf(
-            binding.thirdRow5,
-            binding.thirdRow4,
-            binding.thirdRow3,
-            binding.thirdRow2,
-            binding.thirdRow1
-        ),
-        listOf(
-            binding.fourthRow5,
-            binding.fourthRow4,
-            binding.fourthRow3,
-            binding.fourthRow2,
-            binding.fourthRow1
-        ),
-        listOf(
-            binding.fifthRow5,
-            binding.fifthRow4,
-            binding.fifthRow3,
-            binding.fifthRow2,
-            binding.fifthRow1
-        ),
-        listOf(
-            binding.sixthRow5,
-            binding.sixthRow4,
-            binding.sixthRow3,
-            binding.sixthRow2,
-            binding.sixthRow1
-        )
-    )
+    val listOfTextViews =
+        List(NUMBER_OF_ROWS) { List(WORD_LENGTH) { MutableStateFlow(Letter(" ")) } }
 
-    val keyboardMap = mapOf<String, Button>(
-        "A" to binding.A,
-        "B" to binding.B,
-        "C" to binding.C,
-        "D" to binding.D,
-        "E" to binding.E,
-        "F" to binding.F,
-        "G" to binding.G,
-        "H" to binding.H,
-        "I" to binding.I,
-        "J" to binding.J,
-        "K" to binding.K,
-        "L" to binding.L,
-        "M" to binding.M,
-        "N" to binding.N,
-        "O" to binding.O,
-        "P" to binding.P,
-        "Q" to binding.Q,
-        "R" to binding.RR,
-        "S" to binding.S,
-        "T" to binding.T,
-        "U" to binding.U,
-        "V" to binding.V,
-        "W" to binding.W,
-        "X" to binding.X,
-        "Y" to binding.Y,
-        "Z" to binding.Z
-    )
-
-    var `try` = State.TRY1
-    var guess = List<String>(WORD_LENGTH) { "" }
-
-    val letterStack = Stack<TextView>()
-    val trash = Stack<TextView>()
-
-    fun initLetterStack() {
-        letterStack.clear()
-        trash.clear()
-        val rows = when (`try`) {
-            State.TRY1 -> tryRows[0]
-            State.TRY2 -> tryRows[1]
-            State.TRY3 -> tryRows[2]
-            State.TRY4 -> tryRows[3]
-            State.TRY5 -> tryRows[4]
-            State.TRY6 -> tryRows[5]
-            else -> tryRows[0]
+    val listOfKeys = mutableMapOf<String, MutableStateFlow<Key>>().apply {
+        ALPHABET.forEach { letter ->
+            this[letter.toString()] = MutableStateFlow<Key>(
+                DEFAULT_KEY
+            )
         }
-        rows.forEach { letterStack.push(it) }
     }
 
-    fun nextState() {
-        `try` = when (`try`) {
-            State.TRY1 -> State.TRY2
-            State.TRY2 -> State.TRY3
-            State.TRY3 -> State.TRY4
-            State.TRY4 -> State.TRY5
-            State.TRY5 -> State.TRY6
-            State.TRY6 -> State.TRY1
+    val currentPosition = Position(0, 0)
+
+    val letterTrash = Stack<MutableStateFlow<Letter>>()
+    val keyTrash = Stack<MutableStateFlow<Key>>()
+
+    fun setLetter(letter: String) {
+        if (currentPosition.col < WORD_LENGTH) {
+            viewModelScope.launch {
+                listOfTextViews[currentPosition.row][currentPosition.col].emit(Letter(letter))
+            }
+            currentPosition.nextColumn()
         }
-        initLetterStack()
     }
 
-    private fun getNewWord() {
-        r = Random(System.nanoTime()).nextInt(wordListSize)
+    fun deleteLetter() {
+        if (currentPosition.col > 0) {
+            currentPosition.previousColumn()
+            viewModelScope.launch {
+                listOfTextViews[currentPosition.row][currentPosition.col].emit(Letter(" "))
+            }
+        }
     }
 
-    fun check() {
-        guess = List<String>(5) {
-            tryRows[`try`.id][it].text.toString()
-        }.reversed()
-
+    fun resetGame() {
+        currentPosition.reset()
         viewModelScope.launch {
-            when {
-                (guess.filter { it != " " }.size < 5) -> {
-                    signal.emit(Signal.NEEDLETTER)
+            while (!letterTrash.empty()) {
+                letterTrash.pop().emit(DEFAULT_LETTER)
+                keyTrash.pop().emit(DEFAULT_KEY)
+            }
+        }
+        getNewWordle()
+    }
+
+    var guess: String = ""
+
+    suspend fun checkRow() {
+        guess =
+            listToWord(listOfTextViews[currentPosition.row].filter { it.value.letter != " " }
+                .map { it.value.letter }).lowercase(
+                Locale.getDefault()
+            )
+        when {
+            guess.length < 5 -> {
+                signal.emit(Signal.NEEDLETTER)
+            }
+            wordle == guess -> {
+                signal.emit(Signal.WIN)
+            }
+            wordlistBinarySearch(wordList, guess, 0, wordListSize, WORD_LENGTH) -> {
+                if (currentPosition.row == 5) {
+                    signal.emit(Signal.GAMEOVER)
+                } else {
+                    signal.emit((Signal.NEXTTRY))
                 }
-                (guess == wordToList(wordle)) -> {
-                    signal.emit(Signal.WIN)
+            }
+            else -> {
+                signal.emit(Signal.NOTAWORD)
+            }
+        }
+    }
+
+    fun checkColor(): List<Letter> {
+        val list = mutableListOf<Letter>()
+        listOfTextViews[currentPosition.row].forEachIndexed { index, flow ->
+            list.add(when (guess[index]) {
+                wordle[index] -> {
+                    Letter(flow.value.letter, R.color.green, R.color.white)
                 }
-                (wordlistBinarySearch(wordList, listToWord(guess),0, wordListSize, WORD_LENGTH)) -> {
-                    if (`try` == State.TRY6) {
-                        signal.emit(Signal.GAMEOVER)
-                    } else {
-                        signal.emit(Signal.NEXTTRY)
-                    }
+                in wordle.filterIndexed { i, s -> guess[i] != s } -> {
+                    Letter(flow.value.letter, R.color.yellow, R.color.white)
                 }
                 else -> {
-                    signal.emit(Signal.NOTAWORD)
+                    Letter(flow.value.letter, R.color.dark_gray, R.color.white)
                 }
+            })
+        }
+        return list
+    }
+
+    fun emitColor(list: List<Letter> = checkColor()) {
+        viewModelScope.launch {
+            listOfTextViews[currentPosition.row].forEachIndexed { index, flow ->
+                val letter = list[index]
+                flow.emit(letter)
+                letterTrash.push(flow)
+
+                val key = listOfKeys[letter.letter]!!
+                val bg = when (key.value.backgroundColor) {
+                    R.color.green -> R.color.green
+                    R.color.yellow -> if (letter.backgroundColor == R.color.green) R.color.green else R.color.yellow
+                    else -> letter.backgroundColor
+                }
+
+                key.emit(Key(bg, letter.textColor))
+                keyTrash.push(key)
             }
         }
     }
 
-    fun colorLogic(
-        g: List<String> = guess,
-        w: List<String> = wordToList(wordle)): MutableList<Triple<TextView,Button, Int>> {
-        val result = mutableListOf<Triple<TextView, Button, Int>>()
-        tryRows[`try`.id].reversed().forEachIndexed{ index,  textview ->
-            when(g[index]) {
-                w[index] -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.green))
-                in w.filterIndexed { i, s -> g[i] != s }     -> result.add(Triple(textview, keyboardMap[textview.text]!!, R.color.yellow))
-                else     -> result.add(Triple(textview,keyboardMap[textview.text]!!, R.color.dark_gray))
-            }
-            resetStack.add(Pair(textview, keyboardMap[textview.text.toString()]))
-        }
-        return result
+    private fun getNewWordle() {
+        r = Random(System.nanoTime()).nextInt(wordListSize)
+    }
+}
+
+data class Position(var row: Int, var col: Int) {
+    fun nextColumn() {
+        col += 1
+    }
+
+    fun previousColumn() {
+        col -= 1
+    }
+
+    fun nextRow() {
+        row += 1
+        col = 0
     }
 
     fun reset() {
-        getNewWord()
-        `try` = State.TRY1
-        initLetterStack()
+        row = 0
+        col = 0
     }
-
 }
+
+data class Letter(
+    val letter: String,
+    val backgroundColor: Int = R.drawable.border,
+    val textColor: Int = R.color.black
+)
+
+data class Key(val backgroundColor: Int, val textColor: Int)
