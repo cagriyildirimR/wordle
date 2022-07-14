@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/statistics"
+        style="@style/statistic_titles"
+        android:text="@string/statistics"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/played"
+        style="@style/statistics_main"
+        app:layout_constraintEnd_toStartOf="@+id/win_percentage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/statistics"
+        tools:text="1" />
+
+    <TextView
+        android:id="@+id/played_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/played"
+        app:layout_constraintEnd_toEndOf="@+id/played"
+        app:layout_constraintStart_toStartOf="@+id/played"
+        app:layout_constraintTop_toBottomOf="@+id/played" />
+
+    <TextView
+        android:id="@+id/win_percentage"
+        style="@style/statistics_main"
+        app:layout_constraintEnd_toStartOf="@+id/current_streak"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/played"
+        app:layout_constraintTop_toBottomOf="@+id/statistics"
+        tools:text="100" />
+
+    <TextView
+        android:id="@+id/win_percentage_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/win"
+        app:layout_constraintEnd_toEndOf="@+id/win_percentage"
+        app:layout_constraintStart_toStartOf="@+id/win_percentage"
+        app:layout_constraintTop_toBottomOf="@+id/win_percentage" />
+
+    <TextView
+        android:id="@+id/current_streak"
+        style="@style/statistics_main"
+        app:layout_constraintEnd_toStartOf="@+id/max_streak"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/win_percentage"
+        app:layout_constraintTop_toBottomOf="@+id/statistics"
+        tools:text="1" />
+
+    <TextView
+        android:id="@+id/current_streak_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:lines="2"
+        android:text="@string/current_n_streak"
+        app:layout_constraintEnd_toEndOf="@+id/current_streak"
+        app:layout_constraintStart_toStartOf="@+id/current_streak"
+        app:layout_constraintTop_toBottomOf="@+id/current_streak" />
+
+    <TextView
+        android:id="@+id/max_streak"
+        style="@style/statistics_main"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/current_streak"
+        app:layout_constraintTop_toBottomOf="@+id/statistics"
+        tools:text="1" />
+
+    <TextView
+        android:id="@+id/max_streak_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:lines="2"
+        android:text="@string/max_n_streak"
+        app:layout_constraintEnd_toEndOf="@+id/max_streak"
+        app:layout_constraintStart_toStartOf="@+id/max_streak"
+        app:layout_constraintTop_toBottomOf="@+id/max_streak" />
+
+    <TextView
+        android:id="@+id/distribution"
+        style="@style/statistic_titles"
+        android:text="@string/guess_distribution"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/current_streak_text" />
+
+    <com.example.wordle.DistributionView
+        android:id="@+id/one"
+        style="@style/distribution_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/distribution" />
+
+    <com.example.wordle.DistributionView
+        android:id="@+id/two"
+        style="@style/distribution_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/one" />
+
+    <com.example.wordle.DistributionView
+        android:id="@+id/three"
+        style="@style/distribution_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/two" />
+
+    <com.example.wordle.DistributionView
+        android:id="@+id/four"
+        style="@style/distribution_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/three" />
+
+    <com.example.wordle.DistributionView
+        android:id="@+id/five"
+        style="@style/distribution_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/four" />
+
+    <com.example.wordle.DistributionView
+        android:id="@+id/six"
+        style="@style/distribution_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/five" />
+
+    <Button
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:backgroundTint="@color/green"
+        android:text="@string/next"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/six" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/next"
+        app:layout_constraintStart_toStartOf="@+id/next"
+        app:layout_constraintTop_toBottomOf="@id/next" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

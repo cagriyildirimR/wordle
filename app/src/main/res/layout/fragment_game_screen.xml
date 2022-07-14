@@ -7,9 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".GameScreenFragment">
 
-
     <TextView
         android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
+        android:padding="4dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:alpha="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Not in word list"
+        tools:alpha="1"/>
+
+    <TextView
+        android:id="@+id/wordle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/wordle"
@@ -18,14 +33,14 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/info" />
 
     <LinearLayout
         android:id="@+id/first_letters_row"
         style="@style/letter_rows"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info">
+        app:layout_constraintTop_toBottomOf="@+id/wordle">
 
         <TextView
             android:id="@+id/first_row_1"

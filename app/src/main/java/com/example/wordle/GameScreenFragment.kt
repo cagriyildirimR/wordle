@@ -1,5 +1,7 @@
 package com.example.wordle
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +12,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.wordle.database.StatisticDatabase
+import com.example.wordle.database.StatisticEntity
+import com.example.wordle.database.StatisticsDao
 import com.example.wordle.databinding.FragmentGameScreenBinding
-import com.example.wordle.util.flipListOfTextViews
-import com.example.wordle.util.shakeAnimation
-import com.example.wordle.util.slightlyScaleUpAnimation
+import com.example.wordle.databinding.StatisticDialogBinding
+import com.example.wordle.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -25,12 +32,24 @@ class GameScreenFragment : Fragment() {
 
     private val viewModel by viewModels<WordleViewModel>()
 
+    private lateinit var database: StatisticDatabase
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
 
         _binding = FragmentGameScreenBinding.inflate(inflater, container, false)
+
+        database = (activity!!.application as WordleApplication).database
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val currentStat = database.statisticDao().getStat()
+
+            if (currentStat == null) {
+                database.statisticDao().insert(StatisticEntity())
+            }
+        }
 
         return binding.root
     }
@@ -122,7 +141,7 @@ class GameScreenFragment : Fragment() {
         var shakeAnimation = shakeAnimation(lettersRow[viewModel.currentPosition.row])
 
         keyboardMap.forEach { (letter, button) ->
-            lifecycleScope.launch{
+            lifecycleScope.launch {
                 viewModel.listOfKeys[letter]!!.collect { key ->
                     button.apply {
                         setBackgroundColor(resources.getColor(key.backgroundColor))
@@ -162,16 +181,30 @@ class GameScreenFragment : Fragment() {
             }
         }
 
+
+        val inflater = requireActivity().layoutInflater
+
+
+        val binderDialog = StatisticDialogBinding.inflate(inflater)
+        val builder =
+            AlertDialog.Builder(requireContext()).apply {
+                setView(binderDialog.root)
+            }.create()
+        binderDialog.next.setOnClickListener {
+            builder.cancel()
+        }
+
+
         lifecycleScope.launch {
             viewModel.signal.collect {
                 when (it) {
                     Signal.NOTAWORD -> {
-                        Toast.makeText(context, "Not in word list", Toast.LENGTH_LONG).show()
+                        showInfo(binding.info, "Not in word list")
                         shakeAnimation()
                     }
                     Signal.NEEDLETTER -> {
+                        showInfo(binding.info, "Not enough letters")
                         shakeAnimation()
-                        Toast.makeText(context, "Not enough letters", Toast.LENGTH_LONG).show()
                     }
                     Signal.NEXTTRY -> {
                         flip(
@@ -180,31 +213,60 @@ class GameScreenFragment : Fragment() {
                         ) {
                             viewModel.emitColor()
                             viewModel.currentPosition.nextRow()
-                            shakeAnimation = shakeAnimation(lettersRow[viewModel.currentPosition.row])
+                            shakeAnimation =
+                                shakeAnimation(lettersRow[viewModel.currentPosition.row])
                         }
                     }
                     Signal.GAMEOVER -> {
+                        CoroutineScope(Dispatchers.Default).launch {
+                            val currentStat = database.statisticDao().getStat()
+                            currentStat!!.lost()
+                            bindDialog(binderDialog, currentStat)
+                            database.statisticDao().update(currentStat)
+                        }
 
                         flip(
                             listOfTextViews[viewModel.currentPosition.row],
                             viewModel.checkColor(),
                         ) {
+                            builder.show()
                             viewModel.emitColor()
                             viewModel.resetGame()
+                            showInfo(binding.info, viewModel.wordle)
                         }
-
-                        Toast.makeText(context, "Gameover: ${viewModel.wordle}", Toast.LENGTH_LONG)
-                            .show()
                     }
                     Signal.WIN -> {
+                        val pos = viewModel.currentPosition.row
+                        val tws = listOfTextViews[pos]
+
+                        when (pos) {
+                            0 -> showInfo(binding.info, "Genius")
+                            1 -> showInfo(binding.info, "Magnificent")
+                            2 -> showInfo(binding.info, "Impressive")
+                            3 -> showInfo(binding.info, "Splendid")
+                            4 -> showInfo(binding.info, "Great")
+                            5 -> showInfo(binding.info, "Phew")
+                        }
+
+                        CoroutineScope(Dispatchers.Default).launch {
+                            val currentStat = database.statisticDao().getStat()
+                            currentStat!!.won(pos)
+                            bindDialog(binderDialog, currentStat)
+                            database.statisticDao().update(currentStat)
+                        }
                         flip(
-                            listOfTextViews[viewModel.currentPosition.row],
+                            tws,
                             viewModel.checkColor(),
                         ) {
-                            viewModel.emitColor()
-                            viewModel.resetGame()
+                            winAnimator(tws){
+
+                                viewModel.emitColor()
+                                viewModel.resetGame()
+                                builder.show()
+                                shakeAnimation =
+                                    shakeAnimation(lettersRow[viewModel.currentPosition.row])
+                            }.start()
                         }
-                        Toast.makeText(context, "YouWon", Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -224,6 +286,47 @@ class GameScreenFragment : Fragment() {
         ) {
             doOnEnd()
         }.start()
+    }
+
+    private fun bindDialog(binding: StatisticDialogBinding, stats: StatisticEntity) {
+        binding.apply {
+            val totalWin = (stats.first + stats.second + stats.third + stats.fourth + stats.fifth + stats.sixth)
+
+            played.text = stats.played.toString()
+            winPercentage.text = winRatio(stats).toString()
+            currentStreak.text = stats.streak.toString()
+            maxStreak.text = stats.maxStreak.toString()
+
+            one.title = "1"
+            one.percentage = stats.first / totalWin.toFloat()
+            one.countText = stats.first.toString()
+
+            two.title = "2"
+            two.percentage = stats.second / totalWin.toFloat()
+            two.countText = stats.second.toString()
+
+            three.title = "3"
+            three.percentage = stats.third / totalWin.toFloat()
+            three.countText = stats.third.toString()
+
+            four.title = "4"
+            four.percentage = stats.fourth / totalWin.toFloat()
+            four.countText = stats.fourth.toString()
+
+            five.title = "5"
+            five.percentage = stats.fifth / totalWin.toFloat()
+            five.countText = stats.fifth.toString()
+
+            six.title = "6"
+            six.percentage = stats.sixth / totalWin.toFloat()
+            six.countText = stats.sixth.toString()
+        }
+    }
+
+    fun winRatio(stats: StatisticEntity): Int {
+        val totalWin = (stats.first + stats.second + stats.third + stats.fourth + stats.fifth + stats.sixth)
+        val ratio = totalWin.toFloat() / stats.played
+        return (ratio * 100).toInt()
     }
 
     override fun onDestroy() {

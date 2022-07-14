@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.wordle.data.WORD_LENGTH
 import com.example.wordle.data.wordList
 import com.example.wordle.data.wordListSize
+import com.example.wordle.database.StatisticDatabase
 import com.example.wordle.databinding.FragmentGameScreenBinding
 import com.example.wordle.util.listToWord
 import com.example.wordle.util.wordlistBinarySearch
@@ -28,7 +29,6 @@ class WordleViewModel() : ViewModel() {
     private val wordSlice get() = r * WORD_LENGTH
 
     val wordle get() = wordList.slice(wordSlice until wordSlice + WORD_LENGTH)
-
     val listOfTextViews =
         List(NUMBER_OF_ROWS) { List(WORD_LENGTH) { MutableStateFlow(Letter(" ")) } }
 

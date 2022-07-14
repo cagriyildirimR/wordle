@@ -31,4 +31,25 @@
         <item name="android:layout_height">66dp</item>
         <item name="android:orientation">horizontal</item>
     </style>
+
+    <style name="distribution_style">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">20dp</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+
+    <style name="statistic_titles">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">20dp</item>
+        <item name="android:textSize">20dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="statistics_main">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">10dp</item>
+        <item name="android:textSize">48dp</item>
+    </style>
 </resources>
