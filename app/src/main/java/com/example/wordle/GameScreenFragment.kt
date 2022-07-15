@@ -224,6 +224,7 @@ class GameScreenFragment : Fragment() {
                             bindDialog(binderDialog, currentStat)
                             database.statisticDao().update(currentStat)
                         }
+                        showInfo(binding.info, viewModel.wordle)
 
                         flip(
                             listOfTextViews[viewModel.currentPosition.row],
@@ -232,7 +233,8 @@ class GameScreenFragment : Fragment() {
                             builder.show()
                             viewModel.emitColor()
                             viewModel.resetGame()
-                            showInfo(binding.info, viewModel.wordle)
+                            shakeAnimation =
+                                shakeAnimation(lettersRow[viewModel.currentPosition.row])
                         }
                     }
                     Signal.WIN -> {
@@ -290,7 +292,8 @@ class GameScreenFragment : Fragment() {
 
     private fun bindDialog(binding: StatisticDialogBinding, stats: StatisticEntity) {
         binding.apply {
-            val totalWin = (stats.first + stats.second + stats.third + stats.fourth + stats.fifth + stats.sixth)
+            var totalWin = (stats.first + stats.second + stats.third + stats.fourth + stats.fifth + stats.sixth)
+            totalWin = if (totalWin == 0) 1 else totalWin
 
             played.text = stats.played.toString()
             winPercentage.text = winRatio(stats).toString()
