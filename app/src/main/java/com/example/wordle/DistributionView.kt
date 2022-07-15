@@ -21,7 +21,7 @@ class DistributionView(val ctx: Context, attrs: AttributeSet) : View(ctx, attrs)
 
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 48f
+        textSize = 24f
     }
 
     override fun onDraw(canvas: Canvas) {
